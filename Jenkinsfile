@@ -8,91 +8,74 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                echo 'Executing Build: Cleaning and packaging the project using Maven.'
+                echo 'Task: Build - Using Maven to clean and package the project'
+                // Example build step
+                sh 'mvn clean package'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Task: Test - Using Maven to run tests'
+                // Example test step
+                sh 'mvn test > test.log'
             }
             post {
-                always {
-                    mail to: 'Johnnerojunior@gmail.com',
-                         subject: "Build Stage Completed: ${currentBuild.fullDisplayName}",
-                         body: "The Build stage finished with status: ${currentBuild.currentResult}. Please review the logs."
+                success {
+                    mail to: 'johnnerojunior@gmail.com',
+                         subject: "Pipeline Success: ${currentBuild.fullDisplayName}",
+                         body: "The Test stage of the pipeline has succeeded. Please find the log attached.",
+                         attachmentsPattern: 'test.log'
+                }
+                failure {
+                    mail to: 'johnnerojunior@gmail.com',
+                         subject: "Pipeline Failed: ${currentBuild.fullDisplayName}",
+                         body: "The Test stage of the pipeline has failed. Please find the log attached.",
+                         attachmentsPattern: 'test.log'
                 }
             }
         }
-
-        stage('Testing') {
+        stage('Code Analysis') {
             steps {
-                echo 'Executing Testing: Running tests with Maven.'
+                echo 'Task: Code Analysis - Performing code quality analysis'
+                // Code analysis step (replace with actual command)
+                sh 'mvn sonar:sonar > code_analysis.log'
             }
             post {
                 always {
-                    mail to: 'Johnnerojunior@gmail.com',
-                         subject: "Testing Stage Completed: ${currentBuild.fullDisplayName}",
-                         body: "The Testing stage finished with status: ${currentBuild.currentResult}. Please review the logs."
+                    mail to: 'johnnerojunior@gmail.com',
+                         subject: "Code Analysis Stage Completed: ${currentBuild.fullDisplayName}",
+                         body: "The Code Analysis stage has finished. Check the attached log for details.",
+                         attachmentsPattern: 'code_analysis.log'
                 }
             }
         }
-
-        stage('Quality Analysis') {
+        stage('Security Scan') {
             steps {
-                echo 'Performing Quality Analysis: Checking code quality using Checkstyle.'
+                echo 'Task: Security Scan - Performing security scan'
+                // Security scan step (replace with actual command)
+                sh 'dependency-check.sh --project my-app --scan ./ > security_scan.log'
             }
             post {
                 always {
-                    mail to: 'Johnnerojunior@gmail.com',
-                         subject: "Quality Analysis Completed: ${currentBuild.fullDisplayName}",
-                         body: "The Quality Analysis stage finished with status: ${currentBuild.currentResult}. Please review the logs."
+                    mail to: 'johnnerojunior@gmail.com',
+                         subject: "Security Scan Stage Completed: ${currentBuild.fullDisplayName}",
+                         body: "The Security Scan stage has finished. Check the attached log for details.",
+                         attachmentsPattern: 'security_scan.log'
                 }
             }
         }
-
-        stage('Security Check') {
+        stage('Deploy to Staging') {
             steps {
-                echo 'Running Security Check: Conducting a security scan using OWASP Dependency-Check.'
+                echo 'Task: Deploy to Staging - Deploying to staging environment'
+                // Example deploy step (replace with actual command)
+                sh 'scp target/my-app.jar user@staging-server:/path/to/deploy/ > deploy_staging.log'
             }
             post {
                 always {
-                    mail to: 'Johnnerojunior@gmail.com',
-                         subject: "Security Check Completed: ${currentBuild.fullDisplayName}",
-                         body: "The Security Check stage finished with status: ${currentBuild.currentResult}. Please review the logs."
-                }
-            }
-        }
-
-        stage('Staging Deployment') {
-            steps {
-                echo 'Deploying to Staging: Executing deployment instructions for the staging environment.'
-            }
-            post {
-                always {
-                    mail to: 'Johnnerojunior@gmail.com',
-                         subject: "Staging Deployment Completed: ${currentBuild.fullDisplayName}",
-                         body: "The Staging Deployment stage finished with status: ${currentBuild.currentResult}. Please review the logs."
-                }
-            }
-        }
-
-        stage('Staging Tests') {
-            steps {
-                echo 'Running Staging Tests: Executing integration tests on the staging environment.'
-            }
-            post {
-                always {
-                    mail to: 'Johnnerojunior@gmail.com',
-                         subject: "Staging Tests Completed: ${currentBuild.fullDisplayName}",
-                         body: "The Staging Tests stage finished with status: ${currentBuild.currentResult}. Please review the logs."
-                }
-            }
-        }
-
-        stage('Production Deployment') {
-            steps {
-                echo 'Deploying to Production: Executing deployment instructions for the production environment.'
-            }
-            post {
-                always {
-                    mail to: 'Johnnerojunior@gmail.com',
-                         subject: "Production Deployment Completed: ${currentBuild.fullDisplayName}",
-                         body: "The Production Deployment stage finished with status: ${currentBuild.currentResult}. Please review the logs."
+                    mail to: 'johnnerojunior@gmail.com',
+                         subject: "Deploy to Staging Completed: ${currentBuild.fullDisplayName}",
+                         body: "Deployment to staging has finished. Check the attached log for details.",
+                         attachmentsPattern: 'deploy_staging.log'
                 }
             }
         }
@@ -100,9 +83,10 @@ pipeline {
 
     post {
         always {
-            mail to: 'Johnnerojunior@gmail.com',
-                 subject: "Pipeline Execution Summary: ${currentBuild.fullDisplayName}",
-                 body: "The complete pipeline execution has finished with status: ${currentBuild.currentResult}. Please review the logs."
+            mail to: 'johnnerojunior@gmail.com',
+                 subject: "Pipeline ${currentBuild.fullDisplayName} Completed",
+                 body: "The entire pipeline has finished with status: ${currentBuild.currentResult}. Please check the logs for more details.",
+                 attachmentsPattern: '**/*.log'
         }
     }
 }
